@@ -1,0 +1,29 @@
+services:
+  db:
+    container_name: poc_db
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - 3306:3306
+    networks:
+      - nest_poc
+
+  rabbitmq:
+    container_name: poc_rabbitmq
+    image: rabbitmq:3-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - nest_poc
+
+networks:
+  nest_poc:
+    driver: bridge
