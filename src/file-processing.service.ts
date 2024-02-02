@@ -25,16 +25,11 @@ export class FileProcessingService {
     });
 
     let order = 1;
-    let batch: Line[] = [];
-    const batchSize = 10000; // Ajuste conforme a necessidade e capacidade do banco
+    const batch: Line[] = [];
 
     for await (const line of rl) {
       batch.push({ number: line.trim(), order });
       order++;
-      if (batch.length === batchSize) {
-        await this.insertBatch(batch); // Insere cada lote individualmente
-        batch = []; // Limpa o lote após a inserção
-      }
     }
 
     // Insere qualquer registro restante
