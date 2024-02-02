@@ -42,48 +42,17 @@ export class FileProcessingService {
       await this.insertBatch(batch);
     }
 
-    await this.transferDataToFinalTable();
     console.timeEnd('processFile');
     this.logger.debug('Finished file processing');
   }
 
   private async insertBatch(batch: Line[]): Promise<void> {
     try {
-      // Insere o lote na tabela temporária dentro de uma transação
       await this.prisma.$transaction(async (prisma) => {
-        await prisma.tabelaTemporaria.createMany({ data: batch });
+        await prisma.tabelaFinal.createMany({ data: batch });
       });
     } catch (error) {
       this.logger.error('Error inserting batch', error);
-      throw error;
-    }
-  }
-
-  private async transferDataToFinalTable(): Promise<void> {
-    try {
-      const tempData = await this.prisma.tabelaTemporaria.findMany({
-        orderBy: { order: 'asc' },
-      });
-
-      this.logger.debug(`found ${tempData.length} in temporary database`);
-
-      const dataToInsert = tempData.map((d) => {
-        return { number: d.number, order: d.order };
-      });
-
-      if (tempData.length > 0) {
-        const { count } = await this.prisma.tabelaFinal.createMany({
-          data: dataToInsert,
-        });
-
-        this.logger.log(`inserted ${count} registries to final table`);
-
-        await this.prisma.tabelaTemporaria.deleteMany({});
-      }
-    } catch (error) {
-      this.logger.error('Failed to transfer data to final table', error);
-      // Em caso de falha, considerar a limpeza da tabela temporária ou outras ações de recuperação
-      await this.prisma.tabelaTemporaria.deleteMany();
       throw error;
     }
   }
